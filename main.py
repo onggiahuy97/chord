@@ -32,19 +32,26 @@ def join_node():
             "error": "The Chord ring is full"
         }), 400
 
-    new_node_id = random.randint(0, MAX-1)
+    new_node_id = random.randint(0, MAX - 1)
     while new_node_id in nodes:
-        new_node_id = random.randint(0, MAX-1)
+        new_node_id = random.randint(0, MAX - 1)
     
     new_node = Node(new_node_id)
     nodes[new_node_id] = new_node
 
-    new_node.join(initial_node)
+    # If nodes is empty, set the initial node
+    global initial_node
+    if len(nodes) == 1:  # This is the first node joining the ring
+        initial_node = new_node
+        initial_node.join(initial_node)  # Initial node joins itself
+    else:
+        new_node.join(initial_node)
 
     return jsonify({
         "message": "Node joined",
         "node_id": new_node_id
     }), 201
+
 
 @app.route("/insert", methods=["POST"])
 def insert_key():
@@ -55,6 +62,9 @@ def insert_key():
     
     if key is None or value is None:
         return jsonify({"error": "Key and value are required"}), 400
+
+    if len(nodes) == 0:
+        join_node()
     
     initial_node.put(key, value) 
 
@@ -68,6 +78,12 @@ def insert_key():
 
 @app.route("/get/<key>", methods=["GET"])
 def get_value(key):
+
+    if len(nodes) == 0:
+        return jsonify({
+            "message": "All servers are down. Please come back sometimes later."
+        }), 404
+
     hashed_key = hash(key)
     successor = nodes[initial_node.id].find_successor(hashed_key)
     pair = successor.messages.get(hashed_key)
