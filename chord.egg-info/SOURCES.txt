@@ -1,6 +1,0 @@
-setup.py
-chord.egg-info/PKG-INFO
-chord.egg-info/SOURCES.txt
-chord.egg-info/dependency_links.txt
-chord.egg-info/top_level.txt
-test/test.py
