@@ -50,7 +50,7 @@ class Node:
 
     def successor(self):
         return self.finger[0] 
-    
+
     def find_successor(self,id):  
         if betweenE(id,self.predecessor.id,self.id):
             return self
@@ -134,11 +134,38 @@ class Node:
             prev  = decr(self.id,2**i)
             p = self.find_predecessor(prev)
             p.update_finger_table(self.successor(),i)
-    # not checked 
+
     def leave(self):
-        self.successor().predecessor = self.predecessor
-        self.predecessor.setSuccessor(self.successor())
-        self.update_others_leave()
+        """Transfer keys to successor and update the ring to remove this node."""
+        successor = self.successor()
+        predecessor = self.predecessor
+        
+        # Step 1: Transfer all keys in this node's `messages` to the successor
+        if successor:
+            successor.messages.update(self.messages)  # Transfer all keys to successor
+            print(f"Node {self.id} transferred {len(self.messages)} keys to Node {successor.id}")
+        
+        # Step 2: Update predecessor and successor pointers to remove this node
+        if successor and predecessor:
+            successor.predecessor = predecessor  # Successor's predecessor now points to this node's predecessor
+            predecessor.setSuccessor(successor)  # Predecessor's successor now points to this node's successor
+        
+        # Step 3: Clear this node's messages and finger table to detach it from the ring
+        self.messages.clear()
+        self.finger.clear()
+        self.predecessor = None
+        
+        # Notify the rest of the ring about the departure if the finger table is populated
+        if self.finger:
+            self.update_others_leave()
+        
+        print(f"Node {self.id} has left the ring")
+
+    # not checked 
+    # def leave(self):
+    #     self.successor().predecessor = self.predecessor
+    #     self.predecessor.setSuccessor(self.successor())
+    #     self.update_others_leave()
         
     def setSuccessor(self,succ):
         self.finger[0] = succ

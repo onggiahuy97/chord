@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
 import random
+from random import choice
 from src.chord import Node, hash
 
 app = Flask(__name__)
@@ -25,6 +26,12 @@ def list_nodes():
 @app.route("/join", methods=["POST"])
 def join_node():
     """Join a new node to the Chord ring"""
+    # Check if the ring is full
+    if len(nodes) >= MAX:
+        return jsonify({
+            "error": "The Chord ring is full"
+        }), 400
+
     new_node_id = random.randint(0, MAX-1)
     while new_node_id in nodes:
         new_node_id = random.randint(0, MAX-1)
@@ -77,6 +84,31 @@ def get_value(key):
             "stored_at_node": successor.id 
         }), 200
 
+@app.route("/leave/<int:id>", methods=["POST"])
+def leave(id):
+    # Check if the node exists
+    if id not in nodes:
+        return jsonify({"error": f"Node '{id}' not found in the ring."}), 404
+
+    # Call the leave method on the node
+    nodes[id].leave()
+
+     # Check if the leaving node is the initial node
+    global initial_node  # Use global keyword to modify the global variable
+    if initial_node.id == id:
+        # Choose a random node from the remaining nodes as the new initial node
+        if len(nodes) > 1:  # Ensure there are nodes left to choose from
+            random_node_id = choice(list(nodes.keys()))
+            while random_node_id == id:  # Ensure we don't pick the same node
+                random_node_id = choice(list(nodes.keys()))
+            initial_node = nodes[random_node_id]
+            
+    # Remove the node from the nodes dictionary
+    del nodes[id]
+
+    return jsonify({
+        "message": f"Node '{id}' successfully left the ring."
+    }), 200
 
         
 if __name__ == "__main__":

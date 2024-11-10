@@ -1,14 +1,14 @@
 import random 
 from src.chord import Node 
 
-k = 5
+k = 4
 
 # Test to create nodes and form the Chord ring
 def test_chord_ring():
     # Create nodes
     nodes = []
     existing_ids = set()
-    for i in range(10):  # Creating 5 nodes
+    for i in range(5):  # Creating 5 nodes
         while True:
             node_id = random.randint(0, 2 ** k)
             if node_id not in existing_ids:
