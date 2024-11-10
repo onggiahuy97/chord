@@ -2,7 +2,7 @@ import random
 import hashlib
 from typing import Optional
 
-k = 5
+k = 4
 MAX = 2**k
 
 def id():
@@ -44,12 +44,12 @@ class Node:
         self.id = id
         self.finger = {}
         self.start = {}
-        self.message = {}
+        self.messages = {}
         for i in range(k):
             self.start[i] = (self.id+(2**i)) % (2**k)
 
     def successor(self):
-        return self.finger[0]
+        return self.finger[0] 
     
     def find_successor(self,id):  
         if betweenE(id,self.predecessor.id,self.id):
@@ -80,7 +80,29 @@ class Node:
         else:
             self.init_finger_table(n1)
             self.update_others()  
-           # Move keys !!! 
+            self.move_keys() 
+        
+    def move_keys(self):
+        """Transfer keys from successor to this node for which this node is now responsible."""
+        # Get the current successor
+        successor = self.successor()
+        
+        # Identify the range of keys this node should take responsibility for
+        keys_to_move = {}
+        
+        # Transfer keys in the interval (predecessor.id, self.id]
+        for hashed_key, (key, value) in successor.messages.items():
+            if betweenE(hashed_key, self.predecessor.id, self.id):
+                keys_to_move[hashed_key] = (key, value)
+        
+        # Move keys to the new node's storage
+        self.messages.update(keys_to_move)
+        
+        # Remove moved keys from the successor
+        for hashed_key in keys_to_move:
+            del successor.messages[hashed_key]
+        
+        print(f"Node {self.id} has moved {len(keys_to_move)} keys from Node {successor.id}")
             
     def init_finger_table(self,n1):
         self.finger[0] = n1.find_successor(self.start[0])
@@ -122,7 +144,8 @@ class Node:
         self.finger[0] = succ
 
     def put(self, key, value):
-        target_node = self.find_successor(hash(key))
-        target_node.message[key] = value
+        hashed_key = hash(key)
+        target_node = self.find_successor(hashed_key)
+        target_node.messages[hashed_key] = (key, value)
         print(f"Hash: '{hash(key)}' Key '{key}' with value '{value}' stored at Node {target_node.id}")
         
