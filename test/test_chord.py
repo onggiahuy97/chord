@@ -34,11 +34,11 @@ class TestChord(unittest.TestCase):
         self.assertEqual(n1.successor().id, 14, "Node 1's successor should be node 4")
         self.assertEqual(n1.predecessor.id, 27, "Node 1's predecessor should be node 7")
 
-        # Test node 4's connections
+        # Test node 14's connections
         self.assertEqual(n14.successor().id, 27, "Node 14's successor should be node 27")
         self.assertEqual(n14.predecessor.id, 1, "Node 14's predecessor should be node 1")
 
-        # Test node 7's connections
+        # Test node 27's connections
         self.assertEqual(n27.successor().id, 1, "Node 27's successor should be node 1")
         self.assertEqual(n27.predecessor.id, 14, "Node 27's predecessor should be node 14")
         print("==========================================")
@@ -66,6 +66,7 @@ class TestChord(unittest.TestCase):
         
         self.assertEqual(len(n1.messages) + len(n14.messages), len(keys), "Node 27 leave and should transfer all message to its successor")
 
+        n1.leave()
 
 
     def tearDown(self):
