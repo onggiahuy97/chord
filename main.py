@@ -52,6 +52,20 @@ def join_node():
         "node_id": new_node_id
     }), 201
 
+# @app.route("/join/<int:id>", methods="POST") 
+# def join(id):
+#     if id in nodes:
+#         return jsonify({
+#             "message": f"Node with id '{id} already in the Chord"
+#         })
+    
+#     new_node = Node(id)
+#     new_node.join(initial_node)
+
+#     return jsonify({
+#         "message": "Node joined",
+#         "node_id": new_node.id
+#     }), 201
 
 @app.route("/insert", methods=["POST"])
 def insert_key():
