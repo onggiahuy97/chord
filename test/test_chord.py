@@ -5,10 +5,6 @@ from src.chord import Node, hash, m, MAX
 
 class TestChord(unittest.TestCase):
     """Test cases for the local Chord implementation."""
-
-    def setUp(self):
-        """Set up the initial conditions for each test."""
-        # Reset any global variables or states if necessary
     
     def test_nodes_join(self):
         """Test joining multiple nodes to the Chord ring and verify the ring structure."""
@@ -68,10 +64,7 @@ class TestChord(unittest.TestCase):
 
         n1.leave()
 
-
-    def tearDown(self):
-        """Clean up after each test."""
-        # Reset any changes made during tests
+        self.assertEqual(len(n14.messages), len(keys), "Node 1 leave and should transfer all message to its successor")
 
 if __name__ == '__main__':
     unittest.main()

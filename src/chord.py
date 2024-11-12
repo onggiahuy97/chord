@@ -55,7 +55,7 @@ class Node:
             self.start[i] = (self.id+(2**i)) % (2**m)
 
     def successor(self):
-        return self.finger[0] 
+        return self.finger[0]
 
     def find_successor(self,id):  
         if between_include_end(id,self.predecessor.id,self.id):
