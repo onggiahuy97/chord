@@ -1,7 +1,7 @@
 import random 
 from src.chord import Node 
 
-k = 4
+k = 5
 
 # Test to create nodes and form the Chord ring
 def test_chord_ring():

@@ -126,6 +126,26 @@ def leave(id):
         "message": f"Node '{id}' successfully left the ring."
     }), 200
 
+@app.route("/info/<int:id>", methods=["GET"])
+def get_info(id):
+    if id not in nodes:
+        return jsonify({"error": f"Node '{id}' not found in the ring."}), 404
+    
+    # Format messages to be more readable
+    formatted_messages = {
+        str(hash_id): {
+            "key": key,
+            "value": value
+        }
+        for hash_id, (key, value) in nodes[id].messages.items()
+    }
+
+    return jsonify({
+        "id": id,
+        "sucessor": nodes[id].successor().id,
+        "messages": formatted_messages
+    })
+
         
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host='localhost', port=5000, debug=True)
