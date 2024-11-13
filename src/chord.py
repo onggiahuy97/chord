@@ -5,7 +5,6 @@ from typing import Optional
 m = 5
 MAX = 2**m
 
-# k is the number of bits
 
 def id():
     return long(random.uniform(0,2**m))
@@ -78,13 +77,13 @@ class Node:
         return self
 
 
-    def join(self,n1):
-        if self == n1:
+    def join(self,leader_node):
+        if self == leader_node:
             for i in range(m):
                 self.finger[i] = self
             self.predecessor = self
         else:
-            self.init_finger_table(n1)
+            self.init_finger_table(leader_node)
             self.update_others()
             self.move_keys()
 
@@ -166,12 +165,6 @@ class Node:
             self.update_others_leave()
 
         print(f"Node {self.id} has left the ring")
-
-    # not checked
-    # def leave(self):
-    #     self.successor().predecessor = self.predecessor
-    #     self.predecessor.setSuccessor(self.successor())
-    #     self.update_others_leave()
 
     def setSuccessor(self,succ):
         self.finger[0] = succ

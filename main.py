@@ -11,9 +11,9 @@ MAX = 2**m
 nodes = {}
 
 # Create the initial Chord node
-initial_node = Node(random.randint(0, MAX-1))
-initial_node.join(initial_node)
-nodes[initial_node.id] = initial_node
+leader_node = Node(random.randint(0, MAX-1))
+leader_node.join(leader_node)
+nodes[leader_node.id] = leader_node
 
 @app.route("/nodes", methods=["GET"])
 def list_nodes():
@@ -40,12 +40,12 @@ def join_node():
     nodes[new_node_id] = new_node
 
     # If nodes is empty, set the initial node
-    global initial_node
+    global leader_node
     if len(nodes) == 1:  # This is the first node joining the ring
-        initial_node = new_node
-        initial_node.join(initial_node)  # Initial node joins itself
+        leader_node = new_node
+        leader_node.join(leader_node)  # Initial node joins itself
     else:
-        new_node.join(initial_node)
+        new_node.join(leader_node)
 
     return jsonify({
         "message": "Node joined",
@@ -80,14 +80,14 @@ def insert_key():
     if len(nodes) == 0:
         join_node()
 
-    initial_node.put(key, value)
+    leader_node.put(key, value)
 
     return jsonify({
         "message": f"Key '{key}' with value '{value}' has been inserted",
         "key": key,
         "value": value,
         "hash_id": hash(key),
-        "stored_at_node": initial_node.find_successor(hash(key)).id
+        "stored_at_node": leader_node.find_successor(hash(key)).id
     }), 200
 
 @app.route("/get/<key>", methods=["GET"])
@@ -99,7 +99,7 @@ def get_value(key):
         }), 404
 
     hashed_key = hash(key)
-    successor = nodes[initial_node.id].find_successor(hashed_key)
+    successor = nodes[leader_node.id].find_successor(hashed_key)
     pair = successor.messages.get(hashed_key)
 
     if pair is None:
@@ -124,14 +124,14 @@ def leave(id):
     nodes[id].leave()
 
      # Check if the leaving node is the initial node
-    global initial_node  # Use global keyword to modify the global variable
-    if initial_node.id == id:
+    global leader_node  # Use global keyword to modify the global variable
+    if leader_node.id == id:
         # Choose a random node from the remaining nodes as the new initial node
         if len(nodes) > 1:  # Ensure there are nodes left to choose from
             random_node_id = choice(list(nodes.keys()))
             while random_node_id == id:  # Ensure we don't pick the same node
                 random_node_id = choice(list(nodes.keys()))
-            initial_node = nodes[random_node_id]
+            leader_node = nodes[random_node_id]
 
     # Remove the node from the nodes dictionary
     del nodes[id]
