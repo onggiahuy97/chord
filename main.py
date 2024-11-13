@@ -35,7 +35,7 @@ def join_node():
     new_node_id = random.randint(0, MAX - 1)
     while new_node_id in nodes:
         new_node_id = random.randint(0, MAX - 1)
-    
+
     new_node = Node(new_node_id)
     nodes[new_node_id] = new_node
 
@@ -52,13 +52,13 @@ def join_node():
         "node_id": new_node_id
     }), 201
 
-# @app.route("/join/<int:id>", methods="POST") 
+# @app.route("/join/<int:id>", methods="POST")
 # def join(id):
 #     if id in nodes:
 #         return jsonify({
 #             "message": f"Node with id '{id} already in the Chord"
 #         })
-    
+
 #     new_node = Node(id)
 #     new_node.join(initial_node)
 
@@ -73,14 +73,14 @@ def insert_key():
     data = request.get_json()
     key = data.get("key")
     value = data.get("value")
-    
+
     if key is None or value is None:
         return jsonify({"error": "Key and value are required"}), 400
 
     if len(nodes) == 0:
         join_node()
-    
-    initial_node.put(key, value) 
+
+    initial_node.put(key, value)
 
     return jsonify({
         "message": f"Key '{key}' with value '{value}' has been inserted",
@@ -111,7 +111,7 @@ def get_value(key):
             "key": pair[0],
             "value": pair[1],
             "hash_id": hashed_key,
-            "stored_at_node": successor.id 
+            "stored_at_node": successor.id
         }), 200
 
 @app.route("/leave/<int:id>", methods=["POST"])
@@ -132,7 +132,7 @@ def leave(id):
             while random_node_id == id:  # Ensure we don't pick the same node
                 random_node_id = choice(list(nodes.keys()))
             initial_node = nodes[random_node_id]
-            
+
     # Remove the node from the nodes dictionary
     del nodes[id]
 
@@ -144,7 +144,7 @@ def leave(id):
 def get_info(id):
     if id not in nodes:
         return jsonify({"error": f"Node '{id}' not found in the ring."}), 404
-    
+
     # Format messages to be more readable
     formatted_messages = {
         str(hash_id): {
@@ -160,6 +160,6 @@ def get_info(id):
         "messages": formatted_messages
     })
 
-        
+
 if __name__ == "__main__":
-    app.run(host='localhost', port=5000, debug=True)
+    app.run()

@@ -20,6 +20,8 @@ class TestChord(unittest.TestCase):
         n27 = Node(27)
         n27.join(n1)
 
+        n1.print_finger_table()
+
         keys = ["apple", "banana", "cherry", "date", "elderberry"]
         values = ["red", "yellow", "red", "brown", "purple"]
         for key, value in zip(keys, values):
