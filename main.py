@@ -18,7 +18,12 @@ nodes[leader_node.id] = leader_node
 @app.route("/nodes", methods=["GET"])
 def list_nodes():
     """List all nodes in the Chord ring"""
-    node_list = [{"id": node_id, "successor": node.successor().id if node.successor() else ""} for node_id, node in nodes.items()]
+    node_list = [
+        {
+            "id": node_id, 
+            "successor": node.successor().id if node.successor() else "",
+            "messagesCount": len(node.messages)
+        } for node_id, node in nodes.items()]
     return jsonify({
         "nodes": node_list
     }), 200
