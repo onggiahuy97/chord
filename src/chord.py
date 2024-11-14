@@ -1,13 +1,7 @@
-import random
 import hashlib
-from typing import Optional
 
 m = 5
 MAX = 2**m
-
-
-def id():
-    return long(random.uniform(0,2**m))
 
 def decrease_with_wraparound(value,size):
     """Decreases value by size with wraparound at MAX, used for finger table predecessor calculation"""
@@ -41,7 +35,7 @@ def between_include_end(value,start,end):
     else:
         return between(value,start,end)
 
-def hash(key):
+def hash_int(key):
     return int(hashlib.sha1(key.encode()).hexdigest(), 16) % (2 ** m)
 
 class Node:
@@ -170,10 +164,11 @@ class Node:
         self.finger[0] = succ
 
     def put(self, key, value):
-        hashed_key = hash(key)
+        # Hash key to know which successor will store the message
+        hashed_key = hash_int(key)
         target_node = self.find_successor(hashed_key)
         target_node.messages[hashed_key] = (key, value)
-        print(f"Hash: '{hash(key)}' Key '{key}' with value '{value}' stored at Node {target_node.id}")
+        print(f"Hash: '{hash_int(key)}' Key '{key}' with value '{value}' stored at Node {target_node.id}")
 
     # Helper function to print the finger table for a node
     def print_finger_table(self):

@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 import random
 from random import choice
-from src.chord import Node, hash
+from src.chord import Node, hash_int
 
 app = Flask(__name__)
 
@@ -20,7 +20,7 @@ def list_nodes():
     """List all nodes in the Chord ring"""
     node_list = [
         {
-            "id": node_id, 
+            "id": node_id,
             "successor": node.successor().id if node.successor() else "",
             "messagesCount": len(node.messages)
         } for node_id, node in nodes.items()]
@@ -33,6 +33,7 @@ def join_node():
     """Join a new node to the Chord ring"""
     # Check if the ring is full
     if len(nodes) >= MAX:
+        print("The Chord ring is full.")
         return jsonify({
             "error": "The Chord ring is full"
         }), 400
@@ -91,8 +92,8 @@ def insert_key():
         "message": f"Key '{key}' with value '{value}' has been inserted",
         "key": key,
         "value": value,
-        "hash_id": hash(key),
-        "stored_at_node": leader_node.find_successor(hash(key)).id
+        "hash_id": hash_int(key),
+        "stored_at_node": leader_node.find_successor(hash_int(key)).id
     }), 200
 
 @app.route("/get/<key>", methods=["GET"])
@@ -103,7 +104,7 @@ def get_value(key):
             "message": "All servers are down. Please come back sometimes later."
         }), 404
 
-    hashed_key = hash(key)
+    hashed_key = hash_int(key)
     successor = nodes[leader_node.id].find_successor(hashed_key)
     pair = successor.messages.get(hashed_key)
 
@@ -151,13 +152,21 @@ def get_info(id):
         return jsonify({"error": f"Node '{id}' not found in the ring."}), 404
 
     # Format messages to be more readable
-    formatted_messages = {
-        str(hash_id): {
+    # formatted_messages = {
+    #     str(hash_id): {
+    #         "key": key,
+    #         "value": value
+    #     }
+    #     for hash_id, (key, value) in nodes[id].messages.items()
+    # }
+
+    formatted_messages = [
+        {
+            "hash_id": hash_id,
             "key": key,
             "value": value
-        }
-        for hash_id, (key, value) in nodes[id].messages.items()
-    }
+        } for hash_id, (key, value) in nodes[id].messages.items()
+    ]
 
     return jsonify({
         "id": id,
