@@ -1,34 +1,23 @@
-import unittest
-import requests
-import time
-import random
-import string
-import statistics
-from concurrent.futures import ThreadPoolExecutor
-from typing import List, Dict, Tuple
-import json
+from src.network_node import NetworkNode
+# Create and start leader node
+leader = NetworkNode(1, 'localhost', 5001)
+leader.start_server()
 
-class TestChordNetwork(unittest.TestCase):
-    """Test cases for the networked Chord implementation."""
-    
-    BASE_URL = "http://127.0.0.1:5000"
-    MAX_NODES = 32  # 2^5 since m=5
-    
-    def test_network(self):
-        # Create 10 nodes first
-        for _ in range(10):
-            response = requests.post(f"{self.BASE_URL}/join")
-        
-        for i in range(30):
-            headers = {"Content-Type": "application/json"}
-            data = {
-                "key": f"{i}",
-                "value": f"{i}"
-            }
-            response = requests.post(f"{self.BASE_URL}/insert",json=data,headers=headers)
-        
-        response = requests.get(f"{self.BASE_URL}/nodes")
-        print(response)
+# Create and start other nodes
+node2 = NetworkNode(2, 'localhost', 5002)
+node2.start_server()
+node2.join_network(1, 'localhost', 5001)
 
-if __name__ == '__main__':
-    unittest.main(verbosity=2)
+node3 = NetworkNode(3, 'localhost', 5003)
+node3.start_server()
+node3.join_network(1, 'localhost', 5001)
+
+# Test put and get
+# node2.put("key1", "value1")
+# result = node3.get("key1")
+# print(f"Retrieved value: {result}")
+
+# Clean up
+leader.stop_server()
+node2.stop_server()
+node3.stop_server()

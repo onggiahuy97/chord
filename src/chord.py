@@ -102,7 +102,7 @@ class Node:
         for hashed_key in keys_to_move:
             del successor.messages[hashed_key]
 
-        print(f"Node {self.id} has moved {len(keys_to_move)} keys from Node {successor.id}")
+        # print(f"Node {self.id} has moved {len(keys_to_move)} keys from Node {successor.id}")
 
     def init_finger_table(self,n1):
         self.finger[0] = n1.find_successor(self.start[0])
