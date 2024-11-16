@@ -3,6 +3,7 @@ import json
 import threading
 from typing import Dict, Any
 from .chord import Node, hash_int
+import time
 
 class NetworkNode(Node):
     def __init__(self, id: int, host: str, port: int):
@@ -12,6 +13,7 @@ class NetworkNode(Node):
         self.peers: Dict[int, tuple] = {}  # {node_id: (host, port)}
         self.server_socket = None
         self.is_running = False
+        self.received_broadcasts = set()
         
     def start_server(self):
         """Start the node's network server."""
@@ -64,47 +66,76 @@ class NetworkNode(Node):
         """Handle received message and return response."""
         msg_type = message.get('type')
         
-        if msg_type == 'join':
+        if msg_type == 'broadcast':
+            # Forward the broadcast
+            self.broadcast_message(
+                message['message'],
+                message['originator_id'],
+                message['message_id']
+            )
+            return {'status': 'ok', 'message': 'Broadcast received'}
+            
+        elif msg_type == 'peer_info':
+            # Store peer information
             node_id = message['node_id']
             host = message['host']
             port = message['port']
             self.peers[node_id] = (host, port)
-            if self.id == 1:  # If this is the leader
-                self.join(self)  # Initialize leader
-            return {'status': 'ok', 'message': f'Node {node_id} joined'}
-            
-        elif msg_type == 'put':
-            key = message['key']
-            value = message['value']
-            super().put(key, value)  # Use the parent class's put method
-            return {'status': 'ok', 'message': 'Put successful'}
-            
-        elif msg_type == 'get':
-            key = message['key']
-            hashed_key = hash_int(key)
-            if hashed_key in self.messages:
-                return {'status': 'ok', 'value': self.messages[hashed_key][1]}
-            return {'status': 'error', 'message': 'Key not found'}
-            
-        return {'status': 'error', 'message': 'Unknown message type'}
+            return {'status': 'ok', 'message': 'Peer info stored'}
         
-    def join_network(self, id, leader_host: str, leader_port: int):
-        """Join the Chord network through a leader node."""
+    def broadcast_message(self, message: str, originator_id: int = None, message_id: str = None):
+        """Broadcast a message to all peers in the network."""
+        if originator_id is None:
+            originator_id = self.id
+        if message_id is None:
+            message_id = f"{originator_id}_{time.time()}"
+            
+        # If we've already seen this broadcast, ignore it
+        if message_id in self.received_broadcasts:
+            return
+            
+        # Mark this broadcast as received
+        self.received_broadcasts.add(message_id)
+        print(f"Node {self.id} received broadcast: {message}")
+        
+        # Get next node in the ring
+        next_node = self.successor()
+        if next_node.id in self.peers:
+            host, port = self.peers[next_node.id]
+            broadcast_data = {
+                'type': 'broadcast',
+                'message': message,
+                'originator_id': originator_id,
+                'message_id': message_id
+            }
+            self._send_to_peer(host, port, broadcast_data)
+                
+    def _send_to_peer(self, host: str, port: int, data: Dict):
+        """Send message to a specific peer."""
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.connect((host, port))
+                s.send(json.dumps(data).encode())
+                response = s.recv(4096)
+                return json.loads(response.decode())
+        except Exception as e:
+            print(f"Error sending to peer {host}:{port}: {e}")
+            return None
+        
+    def register_peer(self, node_id: int, host: str, port: int):
+        """Register network information for a peer."""
+        self.peers[node_id] = (host, port)
+        print(f"Node {self.id} registered peer {node_id} at {host}:{port}")
+        
+        # Send our info to the new peer
         message = {
-            'type': 'join',
+            'type': 'peer_info',
             'node_id': self.id,
             'host': self.host,
             'port': self.port
         }
-        
-        # Connect to leader
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            try:
-                s.connect((leader_host, leader_port))
-                s.send(json.dumps(message).encode())
-                response = s.recv(4096)
-                print(f"Join response: {response.decode()}")
-                
-                    
-            except Exception as e:
-                print(f"Error joining network: {e}")
+        self._send_to_peer(host, port, message)        
+
+    def clear_broadcast_history(self):
+        """Clear the broadcast history to prevent memory buildup."""
+        self.received_broadcasts.clear()

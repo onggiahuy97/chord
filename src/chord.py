@@ -77,10 +77,12 @@ class Node:
             for i in range(m):
                 self.finger[i] = self
             self.predecessor = self
+            print(f"Node {self.id} has joined itself")
         else:
             self.init_finger_table(leader_node)
             self.update_others()
             self.move_keys()
+            print(f"Node {self.id} has joined node {leader_node.id}")
 
     def move_keys(self):
         """Transfer keys from successor to this node for which this node is now responsible."""
@@ -170,6 +172,14 @@ class Node:
         target_node = self.find_successor(hashed_key)
         target_node.messages[hashed_key] = (key, value)
         print(f"Hash: '{hash_int(key)}' Key '{key}' with value '{value}' stored at Node {target_node.id}")
+    
+    def get(self, key):
+        hashed_key = hash_int(key) 
+        target_node = self.find_successor(hashed_key)
+        if hashed_key in target_node.messages:
+            return target_node.messages[hashed_key]
+        else:
+            return None 
 
     # Helper function to print the finger table for a node
     def print_finger_table(self, seen=None):
