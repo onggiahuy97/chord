@@ -44,9 +44,11 @@ class Node:
         self.finger = {}
         self.start = {}
         self.messages = {}
-        self.leader_id = None 
+        self.leader_id = None
         for i in range(m):
             self.start[i] = (self.id+(2**i)) % (2**m)
+
+        # self.connector = Connector(self.id)
 
     def successor(self):
         return self.finger[0]
@@ -172,28 +174,28 @@ class Node:
         target_node = self.find_successor(hashed_key)
         target_node.messages[hashed_key] = (key, value)
         print(f"Hash: '{hash_int(key)}' Key '{key}' with value '{value}' stored at Node {target_node.id}")
-    
+
     def get(self, key):
-        hashed_key = hash_int(key) 
+        hashed_key = hash_int(key)
         target_node = self.find_successor(hashed_key)
         if hashed_key in target_node.messages:
             return target_node.messages[hashed_key]
         else:
-            return None 
+            return None
 
     # Helper function to print the finger table for a node
     def print_finger_table(self, seen=None):
         print(self.id)
         if seen is None:
             seen = set()
-        
+
         seen.add(self.id)
-        
+
         # Traverse the ring to print other nodes' finger tables
         successor = self.successor()
         if successor.id not in seen:
             successor.print_finger_table(seen)
-    
+
     def start_election(self):
         """Initiates the leader election process."""
         print(f"Node {self.id} starts election.")
@@ -203,7 +205,7 @@ class Node:
         """
         Forwards the election message to the successor with the highest candidate ID.
         Uses the Chang-Roberts algorithm for ring-based leader election.
-        
+
         Args:
             candidate_id: The ID of the current candidate
             seen: Boolean indicating if this candidate_id has completed a full circle
@@ -212,17 +214,17 @@ class Node:
         if self.id == candidate_id and seen:
             print(f"Node {self.id} wins election!")
             self.announce_leader(self.id)
-            
+
         # Case 2: First time the initiator sees its own ID
         elif self.id == candidate_id and not seen:
             print(f"Node {self.id} forwarding own id with seen=True")
             self.successor().forward_election(candidate_id, True)
-            
+
         # Case 3: Current node's ID is less than candidate_id
         elif self.id < candidate_id:
             print(f"Node {self.id} forwards larger candidate {candidate_id}")
             self.successor().forward_election(candidate_id, seen)
-            
+
         # Case 4: Current node's ID is greater than candidate_id
         elif self.id > candidate_id:
             print(f"Node {self.id} replaces candidate {candidate_id} with own larger id")
