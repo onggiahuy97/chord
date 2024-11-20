@@ -1,4 +1,5 @@
 import hashlib
+from src.connector import Connector
 
 m = 5
 MAX = 2**m
@@ -48,7 +49,8 @@ class Node:
         for i in range(m):
             self.start[i] = (self.id+(2**i)) % (2**m)
 
-        # self.connector = Connector(self.id)
+        self.connector = Connector(self.id, 'localhost', 5000 + self.id)
+        self.connector.node = self
 
     def successor(self):
         return self.finger[0]
