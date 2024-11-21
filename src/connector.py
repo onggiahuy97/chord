@@ -5,15 +5,15 @@ from typing import Dict, Any
 import time
 
 class Connector():
-    def __init__(self, id: int, host: str, port: int):
-        self.id = id
-        self.host = host
-        self.port = port
+    def __init__(self, node):
+        self.node = node
+        self.id = self.node.id
+        self.host = 'localhost'
+        self.port = 5000 + self.node.id
         self.peers: Dict[int, tuple] = {}  # {node_id: (host, port)}
         self.server_socket = None
         self.is_running = False
         self.received_broadcasts = set()
-        self.node = None
 
     def start_server(self):
         """Start the node's network server."""

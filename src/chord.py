@@ -1,5 +1,6 @@
 import hashlib
 from src.connector import Connector
+from tabulate import tabulate
 
 m = 5
 MAX = 2**m
@@ -49,8 +50,7 @@ class Node:
         for i in range(m):
             self.start[i] = (self.id+(2**i)) % (2**m)
 
-        self.connector = Connector(self.id, 'localhost', 5000 + self.id)
-        self.connector.node = self
+        self.connector = Connector(self)
 
     def successor(self):
         return self.finger[0]
@@ -187,16 +187,16 @@ class Node:
 
     # Helper function to print the finger table for a node
     def print_finger_table(self, seen=None):
-        print(self.id)
-        if seen is None:
-            seen = set()
+        headers = ["Finger", "Node"]
+        rows = []
+        for k, n in enumerate(self.finger):
+            c1 = f"N{self.id} + {2**k}"
+            c2 = f"N{self.finger[n].id}"
+            rows.append([c1, c2])
 
-        seen.add(self.id)
+        print(f"Finger table of Node {self.id}")
+        print(tabulate(rows, headers, tablefmt="grid"))
 
-        # Traverse the ring to print other nodes' finger tables
-        successor = self.successor()
-        if successor.id not in seen:
-            successor.print_finger_table(seen)
 
     def start_election(self):
         """Initiates the leader election process."""
