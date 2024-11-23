@@ -38,6 +38,7 @@ def between_include_end(value,start,end):
         return between(value,start,end)
 
 def hash_int(key):
+    """Hash given key into integer between 0 and 2**m"""
     return int(hashlib.sha1(key.encode()).hexdigest(), 16) % (2 ** m)
 
 class Node:
@@ -68,6 +69,7 @@ class Node:
         for i in range(m):
             self.start[i] = (self.id+(2**i)) % (2**m)
 
+        # init Connector for networking
         self.connector = Connector(self)
 
     def successor(self):
