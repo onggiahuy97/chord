@@ -125,6 +125,13 @@ class Node:
 
 
     def join(self,leader_node):
+        """
+        Joins the Chord ring, init node's finger table and updating other nodes
+
+        If the node is the first node in the ring, it init itself.
+        Otherwise, it init finger table by contacting its finger table
+        and update other nodes
+        """
         if self == leader_node:
             for i in range(m):
                 self.finger[i] = self
@@ -159,6 +166,13 @@ class Node:
         # print(f"Node {self.id} has moved {len(keys_to_move)} keys from Node {successor.id}")
 
     def init_finger_table(self,n1):
+        """
+        Init finger table of given node
+
+        This method sets up the finger table entries for the current node by querying
+        the existing ring via node n1. It also sets the predecessor of the node and
+        updates the successor's predecessor to point back to this node.
+        """
         self.finger[0] = n1.find_successor(self.start[0])
         self.predecessor = self.successor().predecessor
         self.successor().predecessor = self
@@ -219,6 +233,7 @@ class Node:
         self.finger[0] = succ
 
     def put(self, key, value):
+        """Stores a key-value pair in the Chord ring."""
         # Hash key to know which successor will store the message
         hashed_key = hash_int(key)
         target_node = self.find_successor(hashed_key)
@@ -226,6 +241,7 @@ class Node:
         print(f"Hash: '{hash_int(key)}' Key '{key}' with value '{value}' stored at Node {target_node.id}")
 
     def get(self, key):
+        """Retrieves the value associated with key from the Chord ring"""
         hashed_key = hash_int(key)
         target_node = self.find_successor(hashed_key)
         if hashed_key in target_node.messages:
