@@ -41,6 +41,24 @@ def hash_int(key):
     return int(hashlib.sha1(key.encode()).hexdigest(), 16) % (2 ** m)
 
 class Node:
+    """
+        Initializes a new node in the Chord ring.
+
+        Args:
+            id (int): The identifier of the node in the ring.
+
+        Initializes the node's finger table, start entries, and other attributes
+        required for the Chord protocol. The finger table will be populated when
+        the node joins the ring.
+
+        Attributes:
+            id (int): The node's identifier in the ring.
+            finger (dict): The node's finger table mapping indices to successor nodes.
+            start (dict): The start positions for each entry in the finger table.
+            messages (dict): Key-value storage for the node.
+            leader_id (int): The identifier of the leader node (used in leader election).
+            connector (Connector): A connector for simulating node communication.
+    """
     def __init__(self,id):
         self.id = id
         self.finger = {}
@@ -53,15 +71,35 @@ class Node:
         self.connector = Connector(self)
 
     def successor(self):
+        """Returns the immediate successor of the node"""
         return self.finger[0]
 
     def find_successor(self,id):
+        """
+        Finds the successor node responsible for the given identifier.
+
+        Returns:
+            Node: the successor node responsible for the given id.
+
+        The method checks if the id falls between the current node's predecessor and itself,
+        in which case the current node is responsible. Otherwise, it finds closest predecessor
+        of the id and returns its successor.
+        """
         if between_include_end(id,self.predecessor.id,self.id):
             return self
         n = self.find_predecessor(id)
         return n.successor()
 
     def find_predecessor(self,id):
+        """
+        Finds the predecessor node of a given id.
+
+        returns:
+            Node: The predecessor node of the given id.
+
+        The method traverses the Chord ring using the finger table entries, moving to the
+        closest preceding node until it find a node n1 such that id is between n1 and n1.successor()
+        """
         if id == self.id:
             return self.predecessor
         n1 = self
@@ -70,6 +108,16 @@ class Node:
         return n1
 
     def closest_preceding_finger(self,id):
+        """
+        Returns the closest preceding node to a given id.
+
+        Returns:
+            Node
+
+        The method interates over the finger table entries in reverse order and returns
+        the first finger whose node ID is between the current node's ID and the given ID
+        if no such node is found, return current node itself.
+        """
         for i in range(m-1,-1,-1):
             if between(self.finger[i].id,self.id,id):
                 return self.finger[i]
