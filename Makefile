@@ -1,13 +1,10 @@
 test-chord:
 	python3 test/test_chord.py
 
-test-network:
-	python3 test/test_network.py
-
 test-broadcast:
-	python3 test/test_node_broadcast.py 
+	python3 test/test_network_broadcast.py 
 
-test-leader-selection:
-	python3 test/test_select_new_leader.py 
+test-leader-election:
+	python3 test/test_bully_leader_election.py 
 
-test-all: test-chord test-network test-broadcast test-leader-selection
+test-all: test-chord test-broadcast test-leader-selection
