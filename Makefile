@@ -7,4 +7,9 @@ test-broadcast:
 test-leader-election:
 	python3 test/test_bully_leader_election.py 
 
-test-all: test-chord test-broadcast test-leader-selection
+test-failure-detector:
+	python3 test/test_failure_detector.py
+
+test-gossiping:
+	python3 test/test_gossiping.py
+

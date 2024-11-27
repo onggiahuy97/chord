@@ -1,6 +1,9 @@
 import hashlib
-from src.connector import Connector
+from connector import Connector
 from tabulate import tabulate
+import threading
+import time
+import random
 
 m = 5
 MAX = 2**m
@@ -306,3 +309,61 @@ class Node:
         if self.successor().id != leader_id:  # Continue propagation
             self.successor().announce_leader(leader_id)
 
+    def start_heartbeat(self):
+            """Start sending periodic heartbeat messages to the successor."""
+            def send_heartbeat():
+                while True:
+                    time.sleep(2)  # Adjust interval as needed
+                    try:
+                        successor = self.successor()
+                        if successor:
+                            self.connector.send_heartbeat(successor.id)
+                    except Exception:
+                        print(f"Node {self.id} detected failure of Node {self.successor().id}")
+                        self.handle_failure()
+
+            threading.Thread(target=send_heartbeat, daemon=True).start()
+
+    def handle_failure(self):
+        """Handle failure by finding a new successor and updating references."""
+        # Find the next valid successor from the finger table
+        for i in range(1, len(self.finger)):
+            if self.finger[i]:
+                new_successor = self.finger[i]
+                self.finger[0] = new_successor  # Update current node's successor
+                print(f"Node {self.id} updated successor to Node {new_successor.id}")
+
+                # Notify the new successor to update its predecessor
+                if new_successor:
+                    new_successor.predecessor = self
+                    print(f"Node {new_successor.id} updated predecessor to Node {self.id}")
+
+                # Update other nodes in the ring if necessary
+                self.update_others_leave()  # Notify other nodes about changes in the finger table
+                break
+        else:
+            print(f"Node {self.id} failed to find a valid successor!")
+
+    def merge_gossip(self, gossip_state):
+        """Merge received gossip into local state."""
+        for key, value in gossip_state.get('keys', []):
+            hashed_key = int(key)
+            key_str = value[0]
+            val_str = value[1]
+            if hashed_key not in self.messages:  # Update only if key is new
+                self.messages[hashed_key] = (key_str, val_str)
+                print(f"Node {self.id} updated key {key_str} via gossip")
+
+    def start_gossip(self):
+        """Start a periodic gossip process."""
+        def gossip():
+            while True:
+                time.sleep(3)  # Adjust the interval
+                if self.connector.peers:
+                    peer = random.choice(list(self.connector.peers.keys()))  # Pick a random peer
+                    if peer != self.id:
+                        state = {'keys': list(self.messages.items())}
+                        print(f"Node {self.id} sending gossip to Node {peer} with state: {state}")
+                        self.connector.send_gossip(peer, state)
+
+        threading.Thread(target=gossip, daemon=True).start()

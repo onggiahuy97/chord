@@ -1,18 +1,15 @@
 import unittest
-from chord import Node
 import time
+from chord import Node, hash_int
 
-class TestChordBroadcast(unittest.TestCase):
+class TestGossiping(unittest.TestCase):
     def setUp(self):
-        
         # Create and start nodes (same as in main())
         self.n1 = Node(1)
         self.n2 = Node(2)
         self.n3 = Node(3)
-        self.n4 = Node(4)
-        self.n5 = Node(5)
 
-        self.nodes = [self.n1, self.n2, self.n3, self.n4, self.n5]
+        self.nodes = [self.n1, self.n2, self.n3]
 
         print("\n=====Starting nodes and their servers=====\n")
         for node in self.nodes:
@@ -40,21 +37,20 @@ class TestChordBroadcast(unittest.TestCase):
         for node in self.nodes: 
             node.connector.stop_server()
 
-    def test_broadcast(self):
-        """Test broadcast functionality between two nodes"""
-        # Send test message
-        print("\n=====Starting broadcasting message=====\n")
-        test_message = "Test broadcast message"
-        message_id = f"{self.n1.id}_test"
-        self.n1.connector.broadcast_message(test_message, message_id=message_id)
+    def test_gossip(self):
+        # Add a key to n1 and start gossiping
+        self.n1.put("key1", "value1")
 
-        # Wait for message propagation
-        time.sleep(1)
+        print("\n=====Start Gossiping=====\n")
+ 
+        self.n1.start_gossip()
+        self.n3.start_gossip()
 
-        # Verify all nodes received the message 
-        for node in self.nodes: 
-            received = len(node.connector.received_broadcasts) > 0 
-            self.assertTrue(received, f"Node {node.id} did not receive the broadcast")
+        time.sleep(8)  # Wait for gossip to propagate
+
+        # Verify that the key was gossiped to n3
+        self.assertIn(hash_int("key1"), self.n3.messages)
+        self.assertEqual(self.n3.messages[hash_int("key1")], ("key1", "value1"))
 
 if __name__ == "__main__":
     unittest.main()

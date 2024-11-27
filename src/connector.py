@@ -82,6 +82,17 @@ class Connector():
             port = message['port']
             self.peers[node_id] = (host, port)
             return {'status': 'ok', 'message': 'Peer info stored'}
+        
+        elif msg_type == 'heartbeat':
+        # Acknowledge the heartbeat
+            return {'status': 'ok', 'message': 'Heartbeat acknowledged'}
+        
+        elif msg_type == 'gossip':
+            if hasattr(self.node, "merge_gossip"):  # Ensure the method exists
+                self.node.merge_gossip(message.get('state', {}))
+                return {'status': 'ok', 'message': 'Gossip merged'}
+            else:
+                return {'status': 'error', 'message': 'Gossip merge not supported'}
 
     def broadcast_message(self, message: str, originator_id: int = None, message_id: str = None):
         """Broadcast a message to all peers in the network."""
@@ -139,3 +150,34 @@ class Connector():
     def clear_broadcast_history(self):
         """Clear the broadcast history to prevent memory buildup."""
         self.received_broadcasts.clear()
+
+    def send_heartbeat(self, target_id):
+        if target_id in self.peers:
+            host, port = self.peers[target_id]
+            data = {'type': 'heartbeat', 'sender_id': self.id}
+            response = self._send_to_peer(host, port, data)
+            if response and response.get('status') == 'ok':
+                print(f"Heartbeat sent from Node {self.id} to Node {target_id} was acknowledged")
+            else:
+                print(f"Heartbeat failed for Node {target_id}")
+
+    def send_gossip(self, target_id, state):
+        """Send gossip state to a target peer."""
+        if target_id in self.peers:
+            host, port = self.peers[target_id]
+            try:
+                data = {
+                    'type': 'gossip',
+                    'state': {
+                        'keys': [(int(k), (str(v[0]), str(v[1]))) for k, v in state.get('keys', [])]
+                    }
+                }
+                response = self._send_to_peer(host, port, data)
+                if response and response.get('status') == 'ok':
+                    print(f"Gossip sent to Node {target_id} successfully")
+                else:
+                    print(f"Failed to send gossip to Node {target_id}")
+            except Exception as e:
+                print(f"Error sending gossip to Node {target_id}: {e}")
+
+    

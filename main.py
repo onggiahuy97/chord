@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 import random
 from random import choice
-from src.chord import Node, hash_int
+from chord import Node, hash_int
 
 app = Flask(__name__)
 

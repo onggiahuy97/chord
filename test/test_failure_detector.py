@@ -1,18 +1,15 @@
 import unittest
 from chord import Node
-import time
+import time 
 
-class TestChordBroadcast(unittest.TestCase):
+class TestFailureDetection(unittest.TestCase):
     def setUp(self):
-        
-        # Create and start nodes (same as in main())
+         # Create and start nodes (same as in main())
         self.n1 = Node(1)
         self.n2 = Node(2)
         self.n3 = Node(3)
-        self.n4 = Node(4)
-        self.n5 = Node(5)
 
-        self.nodes = [self.n1, self.n2, self.n3, self.n4, self.n5]
+        self.nodes = [self.n1, self.n2, self.n3]
 
         print("\n=====Starting nodes and their servers=====\n")
         for node in self.nodes:
@@ -40,21 +37,18 @@ class TestChordBroadcast(unittest.TestCase):
         for node in self.nodes: 
             node.connector.stop_server()
 
-    def test_broadcast(self):
-        """Test broadcast functionality between two nodes"""
-        # Send test message
-        print("\n=====Starting broadcasting message=====\n")
-        test_message = "Test broadcast message"
-        message_id = f"{self.n1.id}_test"
-        self.n1.connector.broadcast_message(test_message, message_id=message_id)
+    def test_heartbeat(self):
+        print("\n=====Start Heartbeating=====\n")
+        self.n1.start_heartbeat() # ping the successor
+        time.sleep(5)  # Allow some heartbeats to be sent
+        self.n2.leave() # node 2 failed and leave server
+        time.sleep(5)  # Allow failure detection to occur
+        # Check if node1 handled the failure
+        self.assertNotEqual(self.n1.successor().id, self.n2.id)
 
-        # Wait for message propagation
-        time.sleep(1)
-
-        # Verify all nodes received the message 
-        for node in self.nodes: 
-            received = len(node.connector.received_broadcasts) > 0 
-            self.assertTrue(received, f"Node {node.id} did not receive the broadcast")
+        self.n2.join(self.n1) # node 2 reboot and join the server again
+        time.sleep(5)
+        self.assertEqual(self.n1.successor().id, self.n2.id)
 
 if __name__ == "__main__":
     unittest.main()

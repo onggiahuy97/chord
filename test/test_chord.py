@@ -1,6 +1,6 @@
 import unittest
 import time
-from src.chord import Node, hash_int, m, MAX
+from chord import Node, hash_int, m, MAX
 
 class TestChord(unittest.TestCase):
     """Test cases for the local Chord implementation."""

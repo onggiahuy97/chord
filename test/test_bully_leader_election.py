@@ -1,6 +1,6 @@
 import unittest
 import time
-from src.chord import Node
+from chord import Node
 
 class TestChordLeaderElection(unittest.TestCase):
     def setUp(self):
