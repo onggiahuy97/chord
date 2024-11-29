@@ -79,6 +79,125 @@ python main.py
 
 The server will start on `http://localhost:5000` by default.
 
+## API Endpoints
+
+The project provides several REST API endpoints for interacting with the Chord DHT:
+
+### List All Nodes
+```http
+GET /nodes
+```
+Returns a list of all nodes in the Chord ring with their IDs, successors, and message counts.
+
+**Response Example:**
+```json
+{
+    "nodes": [
+        {
+            "id": 123,
+            "successor": 456,
+            "messagesCount": 3
+        }
+    ]
+}
+```
+
+### Join Node
+```http
+POST /join
+```
+Creates and adds a new node to the Chord ring. Node ID is automatically assigned.
+
+**Response Example:**
+```json
+{
+    "message": "Node joined",
+    "node_id": 123
+}
+```
+
+### Insert Key-Value
+```http
+POST /insert
+```
+
+**Request Body:**
+```json
+{
+    "key": "myKey",
+    "value": "myValue"
+}
+```
+
+**Response Example:**
+```json
+{
+    "message": "Key 'myKey' with value 'myValue' has been inserted",
+    "key": "myKey",
+    "value": "myValue",
+    "hash_id": 456,
+    "stored_at_node": 123
+}
+```
+
+### Get Value
+```http
+GET /get/<key>
+```
+Retrieves a value for the given key.
+
+**Response Example:**
+```json
+{
+    "key": "myKey",
+    "value": "myValue",
+    "hash_id": 456,
+    "stored_at_node": 123
+}
+```
+
+### Node Leave
+```http
+POST /leave/<id>
+```
+Removes a node with the specified ID from the ring.
+
+**Response Example:**
+```json
+{
+    "message": "Node '123' successfully left the ring."
+}
+```
+
+### Node Info
+```http
+GET /info/<id>
+```
+Gets detailed information about a specific node.
+
+**Response Example:**
+```json
+{
+    "id": 123,
+    "sucessor": 456,
+    "messages": [
+        {
+            "hash_id": 789,
+            "key": "myKey",
+            "value": "myValue"
+        }
+    ]
+}
+```
+
+### Error Responses
+
+The API returns appropriate HTTP status codes:
+- `200`: Success
+- `201`: Created (for successful node joins)
+- `400`: Bad Request
+- `404`: Not Found (for missing nodes/keys)
+
 ### 2. Using Docker (Optional)
 
 You can also run the project using Docker:
@@ -103,7 +222,7 @@ make test-chord
 make test-broadcast
 make test-leader-election
 make test-failure-detector
-test test-gossiping
+make test-gossiping
 ```
 
 ## Cleaning Up
