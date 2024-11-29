@@ -1,6 +1,6 @@
 # Chord DHT Project
 
-This project implements a Chord Distributed Hash Table (DHT) with additional features such as leader election and timestamped operations.
+This project implements a Chord Distributed Hash Table (DHT) with additional features such as leader election and  networkking with broadcast/gossip mechanism.
 
 ## Project Structure
 
@@ -20,10 +20,11 @@ This project implements a Chord Distributed Hash Table (DHT) with additional fea
 │   ├── connector.py
 ├── test/
 │   ├── playground.py
-│   ├── test.py
+│   ├── test_failure_detector.py
 │   ├── test_bully_leader_election.py
 │   ├── test_chord.py
 │   ├── test_network_broadcast.py
+│   ├── test_gossiping.py
 └── __pycache__/
 ```
 
@@ -37,16 +38,16 @@ This project implements a Chord Distributed Hash Table (DHT) with additional fea
 ### 1. Clone the Repository
 
 ```sh
-git clone https://github.com/yourusername/chord-dht.git
-cd chord-dht
+git clone https://github.com/onggiahuy97/chord.git
+cd chord
 ```
 
-### 2. Create a Virtual Environment
+### 2. Create a Virtual Environment (Optional)
 
 It is recommended to create a virtual environment to manage dependencies:
 
 ```sh
-python3 -m venv venv
+python -m venv venv
 source venv/bin/activate  # On Windows use `venv\Scripts\activate`
 ```
 
@@ -76,15 +77,15 @@ Run the main application to start a Chord DHT node:
 python main.py
 ```
 
-The server will start on `http://localhost:5001` by default.
+The server will start on `http://localhost:5000` by default.
 
 ### 2. Using Docker (Optional)
 
 You can also run the project using Docker:
 
 ```sh
-docker build -t chord-dht .
-docker run -p 5001:5001 chord-dht
+docker build -t chord .
+docker run -p 5000:5000 chord
 ```
 
 ## Running Tests
@@ -101,6 +102,8 @@ Or run individual test files:
 make test-chord
 make test-broadcast
 make test-leader-election
+make test-failure-detector
+test test-gossiping
 ```
 
 ## Cleaning Up
@@ -121,11 +124,7 @@ The main implementation of the Chord DHT is in the [`src/chord.py`](src/chord.py
 
 Network communication is handled by the [`src/connector.py`](src/connector.py) file.
 
-### 3. Timestamped Node
-
-Timestamped operations are implemented in the [`src/timestamp_node.py`](src/timestamp_node.py) file.
-
-### 4. Leader Election
+### 3. Leader Election
 
 Leader election logic is tested in the [`test/test_bully_leader_election.py`](test/test_bully_leader_election.py) file.
 
@@ -133,6 +132,4 @@ Leader election logic is tested in the [`test/test_bully_leader_election.py`](te
 
 Contributions are welcome! Please open an issue or submit a pull request.
 
-## License
 
-This project is licensed under the MIT License.
