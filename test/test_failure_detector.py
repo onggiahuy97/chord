@@ -1,13 +1,13 @@
 import unittest
 from chord import Node
-import time 
+import time
 
 class TestFailureDetection(unittest.TestCase):
     def setUp(self):
          # Create and start nodes (same as in main())
-        self.n1 = Node(1)
-        self.n2 = Node(2)
-        self.n3 = Node(3)
+        self.n1 = Node(2)
+        self.n2 = Node(3)
+        self.n3 = Node(4)
 
         self.nodes = [self.n1, self.n2, self.n3]
 
@@ -23,8 +23,8 @@ class TestFailureDetection(unittest.TestCase):
             node.join(self.n1)
 
         print("\n=====Register node into their peer=====\n")
-        # Register network information 
-        for node in self.nodes: 
+        # Register network information
+        for node in self.nodes:
             for peer in self.nodes:
                 if node != peer:
                     node.connector.register_peer(peer.id, peer.connector.host, peer.connector.port)
@@ -34,7 +34,7 @@ class TestFailureDetection(unittest.TestCase):
     def tearDown(self):
         # Stop servers (same as end of main())
         print("\n=====Stopping the server of each node=====\n")
-        for node in self.nodes: 
+        for node in self.nodes:
             node.connector.stop_server()
 
     def test_heartbeat(self):
