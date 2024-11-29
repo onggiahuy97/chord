@@ -18,8 +18,6 @@ This project implements a Chord Distributed Hash Table (DHT) with additional fea
 ├── src/
 │   ├── chord.py
 │   ├── connector.py
-│   ├── network_node.py
-│   ├── timestamp_node.py
 ├── test/
 │   ├── playground.py
 │   ├── test.py
