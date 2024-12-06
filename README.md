@@ -1,9 +1,8 @@
 # Chord DHT Project
 
-This project implements a Chord Distributed Hash Table (DHT) with additional features such as leader election and  networkking with broadcast/gossip mechanism.
+This project implements a Chord Distributed Hash Table (DHT) with additional features such as leader election and networking with broadcast/gossip mechanism.
 
 ## Project Structure
-
 ```
 .
 ├── .gitignore
@@ -29,40 +28,29 @@ This project implements a Chord Distributed Hash Table (DHT) with additional fea
 ```
 
 ## Prerequisites
-
 - Python 3.12 or higher
 - `pip` (Python package installer)
 
 ## Setup Instructions
 
 ### 1. Clone the Repository
-
 ```sh
 git clone https://github.com/onggiahuy97/chord.git
 cd chord
 ```
 
 ### 2. Create a Virtual Environment (Optional)
-
-It is recommended to create a virtual environment to manage dependencies:
-
 ```sh
 python -m venv venv
 source venv/bin/activate  # On Windows use `venv\Scripts\activate`
 ```
 
 ### 3. Install Dependencies
-
-Install the required Python packages using `pip`:
-
 ```sh
 pip install -r requirements.txt
 ```
 
 ### 4. Install the Package
-
-Install the package in editable mode:
-
 ```sh
 pip install -e .
 ```
@@ -70,42 +58,31 @@ pip install -e .
 ## Running the Project
 
 ### 1. Start the Chord DHT Node
-
-Run the main application to start a Chord DHT node:
-
 ```sh
 python main.py
 ```
 The server will start on `http://localhost:5000` by default.
 
 ### 1.1 Run Simulator of Chord DHT (Optional)
-
-I have written the simulator in Swift/SwiftUI that works with the Chord REST API for demonstrating purpose.
-
 ```sh
 git clone https://github.com/onggiahuy97/chord_swiftui_protocol
 ```
-
-You will need macOS (macbook) to run the application
+You will need macOS (macbook) to run the application.
 
 ## API Endpoints
-
-The project provides several REST API endpoints for interacting with the Chord DHT:
 
 ### List All Nodes
 ```http
 GET /nodes
 ```
-Returns a list of all nodes in the Chord ring with their IDs, successors, and message counts.
-
 **Response Example:**
 ```json
 {
     "nodes": [
         {
-            "id": 123,
-            "successor": 456,
-            "messagesCount": 3
+            "id": 8,
+            "successor": 15,
+            "messagesCount": 1
         }
     ]
 }
@@ -115,37 +92,52 @@ Returns a list of all nodes in the Chord ring with their IDs, successors, and me
 ```http
 POST /join
 ```
-Creates and adds a new node to the Chord ring. Node ID is automatically assigned.
-
 **Response Example:**
 ```json
 {
     "message": "Node joined",
-    "node_id": 123
+    "node_id": 8
+}
+```
+**Error Response (400):**
+```json
+{
+    "error": "The Chord ring is full"
+}
+```
+
+### Get Hash
+```http
+GET /hash?key=<key>
+```
+**Response Example:**
+```json
+{
+    "hash": 23,
+    "successor": 8
 }
 ```
 
 ### Insert Key-Value
 ```http
 POST /insert
+Content-Type: application/json
 ```
-
 **Request Body:**
 ```json
 {
-    "key": "myKey",
-    "value": "myValue"
+    "key": "test",
+    "value": "success"
 }
 ```
-
 **Response Example:**
 ```json
 {
-    "message": "Key 'myKey' with value 'myValue' has been inserted",
-    "key": "myKey",
-    "value": "myValue",
-    "hash_id": 456,
-    "stored_at_node": 123
+    "message": "Key 'test' with value 'success' has been inserted",
+    "key": "test",
+    "value": "success",
+    "hash_id": 27,
+    "stored_at_node": 8
 }
 ```
 
@@ -153,15 +145,19 @@ POST /insert
 ```http
 GET /get/<key>
 ```
-Retrieves a value for the given key.
-
 **Response Example:**
 ```json
 {
-    "key": "myKey",
-    "value": "myValue",
-    "hash_id": 456,
-    "stored_at_node": 123
+    "key": "test",
+    "value": "success",
+    "hash_id": 27,
+    "stored_at_node": 8
+}
+```
+**Error Response (404):**
+```json
+{
+    "message": "Key not found"
 }
 ```
 
@@ -169,12 +165,10 @@ Retrieves a value for the given key.
 ```http
 POST /leave/<id>
 ```
-Removes a node with the specified ID from the ring.
-
 **Response Example:**
 ```json
 {
-    "message": "Node '123' successfully left the ring."
+    "message": "Node '25' successfully left the ring."
 }
 ```
 
@@ -182,50 +176,28 @@ Removes a node with the specified ID from the ring.
 ```http
 GET /info/<id>
 ```
-Gets detailed information about a specific node.
-
 **Response Example:**
 ```json
 {
-    "id": 123,
-    "sucessor": 456,
+    "id": 8,
+    "successor": 15,
     "messages": [
         {
-            "hash_id": 789,
-            "key": "myKey",
-            "value": "myValue"
+            "hash_id": 7,
+            "key": "genre1",
+            "value": "Rock"
         }
     ]
 }
 ```
 
-### Error Responses
-
-The API returns appropriate HTTP status codes:
-- `200`: Success
-- `201`: Created (for successful node joins)
-- `400`: Bad Request
-- `404`: Not Found (for missing nodes/keys)
-
-### 2. Using Docker (Optional)
-
-You can also run the project using Docker:
-
-```sh
-docker build -t chord .
-docker run -p 5000:5000 chord
-```
-
 ## Running Tests
-
-You can run all tests using the `Makefile`:
-
+Run all tests:
 ```sh
 make test-all
 ```
 
-Or run individual test files:
-
+Run individual tests:
 ```sh
 make test-chord
 make test-broadcast
@@ -235,29 +207,24 @@ make test-gossiping
 ```
 
 ## Cleaning Up
-
-To clean up any processes running on ports between 5000 and 5010, you can use the `cleanup_port.py` script:
-
+Clean up processes on ports 5000-5010:
 ```sh
 python cleanup_port.py
 ```
 
+## Docker Support
+```sh
+docker build -t chord .
+docker run -p 5000:5000 chord
+```
+
 ## Project Components
-
-### 1. Chord DHT
-
-The main implementation of the Chord DHT is in the [`src/chord.py`](src/chord.py) file.
-
-### 2. Network Connector
-
-Network communication is handled by the [`src/connector.py`](src/connector.py) file.
-
-### 3. Leader Election
-
-Leader election logic is tested in the [`test/test_bully_leader_election.py`](test/test_bully_leader_election.py) file.
+- Chord DHT: [`src/chord.py`](src/chord.py)
+- Network Connector: [`src/connector.py`](src/connector.py)
+- Leader Election: [`test/test_bully_leader_election.py`](test/test_bully_leader_election.py)
+- Broadcast peer-to-peer: [`test/test_network_broadcast.py`](test/test_network_broadcast)
+- Gossip: [`test/test_gossiping`](test/test_gossiping)
+- Failure Detector: [`test/test_failure_detector`](test/test_failure_detector)
 
 ## Contributing
-
 Contributions are welcome! Please open an issue or submit a pull request.
-
-

@@ -15,6 +15,13 @@ leader_node = Node(random.randint(0, MAX-1))
 leader_node.join(leader_node)
 nodes[leader_node.id] = leader_node
 
+@app.route("/hash")
+def hash_key():
+    key = request.args.get('key', '')
+    hash_value = hash_int(key)
+    successor = leader_node.find_successor(hash_value).id
+    return jsonify({'hash': hash_value, 'successor': successor})
+
 @app.route("/nodes", methods=["GET"])
 def list_nodes():
     """List all nodes in the Chord ring"""
