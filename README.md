@@ -222,9 +222,9 @@ docker run -p 5000:5000 chord
 - Chord DHT: [`src/chord.py`](src/chord.py)
 - Network Connector: [`src/connector.py`](src/connector.py)
 - Leader Election: [`test/test_bully_leader_election.py`](test/test_bully_leader_election.py)
-- Broadcast peer-to-peer: [`test/test_network_broadcast.py`](test/test_network_broadcast)
-- Gossip: [`test/test_gossiping`](test/test_gossiping)
-- Failure Detector: [`test/test_failure_detector`](test/test_failure_detector)
+- Broadcast peer-to-peer: [`test/test_network_broadcast.py`](test/test_network_broadcast.py)
+- Gossip: [`test/test_gossiping`](test/test_gossiping.py)
+- Failure Detector: [`test/test_failure_detector`](test/test_failure_detector.py)
 
 ## Contributing
 Contributions are welcome! Please open an issue or submit a pull request.
