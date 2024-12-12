@@ -65,7 +65,7 @@ The server will start on `http://localhost:5000` by default.
 
 ### 1.1 Run Simulator of Chord DHT (Optional)
 ```sh
-git clone https://github.com/onggiahuy97/chord_swiftui_protocol
+git clone https://github.com/onggiahuy97/chord_ui_swift
 ```
 You will need macOS (macbook) to run the application.
 
