@@ -1,5 +1,6 @@
 # Chord DHT Project
 
+## About
 This project implements a Chord Distributed Hash Table (DHT) with additional features such as leader election and networking with broadcast/gossip mechanism.
 
 ## Project Structure
